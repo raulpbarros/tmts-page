@@ -24,6 +24,14 @@ const THUMB_Q = 70;
 const COLLECTIONS = new Set(["group", "taca-guarana", "legendary-cards"]);
 const IMAGE_RE = /\.(heic|jpe?g|png)$/i;
 
+// Subfolders under group/ that force an explicit shuffle-deck rarity tier,
+// bypassing the scarcity-based default. Loose group/ photos stay scarcity-tiered.
+const GROUP_TIERS = {
+  "group-mitico": "MÍTICO",
+  "group-epic": "ÉPICO",
+  "group-rare": "RARO",
+};
+
 const titleCase = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 // Display names: literal "capital first letter" per the brief, with a few
 // natural-accent overrides for the Brazilian nicknames.
@@ -118,9 +126,9 @@ async function processImage(srcPath, outDir, baseName) {
   return { src: "/" + relFull, thumb: "/" + relThumb, w, h };
 }
 
-async function processFolder(slug) {
-  const dir = path.join(PEOPLE, slug);
-  const outDir = path.join(OUT, slug);
+// Processes every image directly in `dir` (non-recursive). `idPrefix` namespaces
+// the emitted photo ids; output webp lands under `outDir`.
+async function processDir(dir, outDir, idPrefix) {
   await ensureDir(outDir);
   const files = await listImages(dir);
   const photos = [];
@@ -128,10 +136,30 @@ async function processFolder(slug) {
     const baseName = String(i).padStart(2, "0");
     try {
       const p = await processImage(path.join(dir, files[i]), outDir, baseName);
-      photos.push({ id: `${slug}-${i}`, ...p, source: files[i] });
+      photos.push({ id: `${idPrefix}-${i}`, ...p, source: files[i] });
     } catch (err) {
-      console.warn(`  ! failed ${slug}/${files[i]}: ${err.message}`);
+      console.warn(`  ! failed ${idPrefix}/${files[i]}: ${err.message}`);
     }
+  }
+  return photos;
+}
+
+async function processFolder(slug) {
+  return processDir(path.join(PEOPLE, slug), path.join(OUT, slug), slug);
+}
+
+// Group photos: loose files in group/ (scarcity-tiered) plus tier subfolders
+// (group-mitico/-epic/-rare) whose photos carry an explicit forced tier.
+async function processGroup() {
+  const photos = await processFolder("group");
+  for (const [sub, tier] of Object.entries(GROUP_TIERS)) {
+    const subPhotos = await processDir(
+      path.join(PEOPLE, "group", sub),
+      path.join(OUT, "group", sub),
+      sub,
+    );
+    for (const p of subPhotos) p.tier = tier;
+    photos.push(...subPhotos);
   }
   return photos;
 }
@@ -245,7 +273,7 @@ async function main() {
   }
 
   process.stdout.write("  · group … ");
-  const group = await processFolder("group");
+  const group = await processGroup();
   console.log(`${group.length} photo(s)`);
 
   process.stdout.write("  · taca-guarana … ");

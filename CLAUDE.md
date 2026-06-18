@@ -109,6 +109,26 @@ Standard container: `mx-auto max-w-7xl px-4 sm:px-8` + `py-20 sm:py-28`.
 - New section = add `id`, register it in `Hud` `LINKS` + the IntersectionObserver
   id list, and give it a `SectionHead` index.
 
+## Shuffle deck rarity (Cápsula)
+
+The shuffle deck (`ShuffleDeck.tsx`) tags each pull with a tier. Default tier is
+**scarcity-based**: the fewer photos a photo's origin contributes to the archive,
+the rarer it pulls (`COMUM` → `RARO` → `ÉPICO` → `LENDÁRIO`). Two ways to **force**
+a tier, bypassing scarcity:
+
+- `assets/people/legendary-cards/` → **MÍTICO** (`legendary` flag). Rarest pull;
+  fires the confetti burst on reveal.
+- `assets/people/group/` tier subfolders, mapped in `GROUP_TIERS` in
+  `build-media.mjs` → the manifest's per-photo `tier` field:
+  - `group/group-mitico/` → **MÍTICO** (also fires confetti)
+  - `group/group-epic/` → **ÉPICO**
+  - `group/group-rare/` → **RARO**
+  - loose files directly in `group/` stay scarcity-tiered.
+
+To add a forced tier: drop photos in the matching subfolder and `npm run media`.
+New tier folders go in `GROUP_TIERS`; new tier styles/labels in `TIERS` in
+`ShuffleDeck.tsx`. Confetti triggers whenever the resolved label is `MÍTICO`.
+
 ## Placeholders to fill (not bugs)
 
 - `MEMBER_META` in `content.ts` — numbers/classes/taglines are scaffolding.

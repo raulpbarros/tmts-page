@@ -11,6 +11,7 @@ export const rockets = media.rockets;
 
 // Every photo across the whole archive, tagged with where it came from.
 // `legendary` marks the mythic-tier shuffle cards (rarest pull, celebration FX).
+// `tier` (from the manifest) forces an explicit rarity, bypassing scarcity.
 export type TaggedPhoto = Photo & { origin: string; legendary?: boolean };
 
 export const allPhotos: TaggedPhoto[] = [

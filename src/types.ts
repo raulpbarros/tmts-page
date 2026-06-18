@@ -5,6 +5,9 @@ export type Photo = {
   w: number;
   h: number;
   source: string;
+  // Explicit shuffle-deck rarity override (e.g. group-epic -> "ÉPICO").
+  // When absent, rarity is derived from origin scarcity. See ShuffleDeck.
+  tier?: string;
 };
 
 export type Member = {

@@ -9,6 +9,15 @@ import SectionHead from "./SectionHead";
 // fewer photos from that source => rarer pull. Deterministic per photo.
 type Rarity = { label: string; ring: string; text: string; chance: number };
 
+// Tier styling, keyed by label. The MÍTICO tier fires the celebration burst.
+const TIERS: Record<string, Rarity> = {
+  "MÍTICO": { label: "MÍTICO", ring: "border-amber-300", text: "text-amber-300", chance: 1 },
+  "LENDÁRIO": { label: "LENDÁRIO", ring: "border-amber-400", text: "text-amber-400", chance: 4 },
+  "ÉPICO": { label: "ÉPICO", ring: "border-fuchsia-400", text: "text-fuchsia-400", chance: 12 },
+  "RARO": { label: "RARO", ring: "border-cyan-400", text: "text-cyan-400", chance: 28 },
+  "COMUM": { label: "COMUM", ring: "border-acid", text: "text-acid", chance: 56 },
+};
+
 function buildRarity(): Map<string, Rarity> {
   const counts = new Map<string, number>();
   allPhotos.forEach((p) => counts.set(p.origin, (counts.get(p.origin) ?? 0) + 1));
@@ -18,11 +27,13 @@ function buildRarity(): Map<string, Rarity> {
     let r: Rarity;
     // Mythic cards (assets/people/legendary-cards) override scarcity-based tiers:
     // always the rarest pull, and they fire the celebration burst on reveal.
-    if (p.legendary) r = { label: "MÍTICO", ring: "border-amber-300", text: "text-amber-300", chance: 1 };
-    else if (c <= 2) r = { label: "LENDÁRIO", ring: "border-amber-400", text: "text-amber-400", chance: 4 };
-    else if (c <= 4) r = { label: "ÉPICO", ring: "border-fuchsia-400", text: "text-fuchsia-400", chance: 12 };
-    else if (c <= 7) r = { label: "RARO", ring: "border-cyan-400", text: "text-cyan-400", chance: 28 };
-    else r = { label: "COMUM", ring: "border-acid", text: "text-acid", chance: 56 };
+    if (p.legendary) r = TIERS["MÍTICO"];
+    // Explicit tier from the manifest (group-mitico/-epic/-rare subfolders).
+    else if (p.tier && TIERS[p.tier]) r = TIERS[p.tier];
+    else if (c <= 2) r = TIERS["LENDÁRIO"];
+    else if (c <= 4) r = TIERS["ÉPICO"];
+    else if (c <= 7) r = TIERS["RARO"];
+    else r = TIERS["COMUM"];
     map.set(p.id, r);
   });
   return map;
@@ -46,7 +57,7 @@ export default function ShuffleDeck() {
       setCurrent(next);
       setHistory((h) => [...h, next].slice(-12));
       setPulling(false);
-      if (next?.legendary) setCelebrating(true); // mythic pull → party
+      if (next && rarity.get(next.id)?.label === "MÍTICO") setCelebrating(true); // mythic pull → party
     }, 520);
   };
 
@@ -166,7 +177,7 @@ export default function ShuffleDeck() {
                   exit={{ opacity: 0 }}
                   transition={{ type: "spring", stiffness: 200, damping: 20 }}
                   className={`relative z-10 block h-[330px] w-[250px] overflow-hidden border-2 bg-ink-700 clip-hud edge-frame ${r.ring} ${
-                    current.legendary ? "shadow-[0_0_40px_-4px_rgba(252,211,77,0.7)]" : ""
+                    r.label === "MÍTICO" ? "shadow-[0_0_40px_-4px_rgba(252,211,77,0.7)]" : ""
                   }`}
                 >
                   <img src={current.src} alt={current.origin} className="absolute inset-0 h-full w-full object-cover" />

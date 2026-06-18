@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+tsconfig.tsbuildinfo
+
+# generated media (rebuilt from /assets via `npm run media`)
+public/media
+src/data/media.json

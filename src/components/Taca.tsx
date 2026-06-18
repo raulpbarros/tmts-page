@@ -4,8 +4,7 @@ import { media } from "../lib/media";
 import Lightbox from "./Lightbox";
 import SectionHead from "./SectionHead";
 
-// TODO: trocar pelo link do app de chaveamento/histórico da Taça Guaraná
-const TACA_APP_URL = "#";
+const TACA_APP_URL = "https://taca.tmts.com.br";
 
 export default function Taca() {
   const photos = media.taca;

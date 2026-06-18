@@ -4,7 +4,7 @@ import { media } from "../lib/media";
 import Lightbox from "./Lightbox";
 import SectionHead from "./SectionHead";
 
-const TACA_APP_URL = "https://www.taca.guarana.com.br";
+const TACA_APP_URL = "https://www.taca.tmts.com.br";
 
 export default function Taca() {
   const photos = media.taca;
